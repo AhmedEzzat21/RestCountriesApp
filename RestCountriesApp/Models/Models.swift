@@ -26,3 +26,8 @@ struct CurrencyInfo: Codable, Hashable {
     let name: String?
     let symbol: String?
 }
+
+struct AlertMessage: Identifiable {
+    let id = UUID()
+    let message: String
+}
