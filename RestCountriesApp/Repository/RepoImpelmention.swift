@@ -7,12 +7,6 @@
 
 import Foundation
 
-protocol CountryRepositoryProtocol {
-    var storedCountries: [Country] { get }
-    func saveMainCountries(_ countries: [Country])
-    func saveAllCountries(_ countries: [Country])
-}
-
 final class CountryRepository: CountryRepositoryProtocol {
     private let mainKey = "MainCountries_v1"
     private let allKey = "AllCountries_v1"
@@ -20,16 +14,29 @@ final class CountryRepository: CountryRepositoryProtocol {
     private let decoder = JSONDecoder()
 
     var storedCountries: [Country] {
-        guard let data = UserDefaults.standard.data(forKey: mainKey),
-              let decoded = try? decoder.decode([Country].self, from: data) else { return [] }
-        return decoded
+        guard let data = UserDefaults.standard.data(forKey: mainKey) else {
+            print("📦 No stored data found")
+            return []
+        }
+        do {
+            let decoded = try decoder.decode([Country].self, from: data)
+            print("📦 Loaded countries:", decoded.map { $0.name.common })
+            return decoded
+        } catch {
+            print("❌ Failed to decode:", error)
+            return []
+        }
     }
 
     func saveMainCountries(_ countries: [Country]) {
-        guard let data = try? encoder.encode(countries) else { return }
-        UserDefaults.standard.set(data, forKey: mainKey)
+        do {
+            let data = try encoder.encode(countries)
+            UserDefaults.standard.set(data, forKey: mainKey)
+            print("📦 Saved countries:", countries.map { $0.name.common })
+        } catch {
+            print("❌ Failed to encode:", error)
+        }
     }
-
     func saveAllCountries(_ countries: [Country]) {
         guard let data = try? encoder.encode(countries) else { return }
         UserDefaults.standard.set(data, forKey: allKey)
